@@ -3,9 +3,12 @@ import json
 import time
 import traceback
 import config
+import requests
+import mbtaTimeDisplay
 from collections import defaultdict
 
 train_url = 'http://realtime.mbta.com/developer/api/v2/predictionsbystop?api_key=' + config.MBTA_API_KEY + '&stop=place-'
+matrix_url = config.MATRIX_HOST + '/mbta'
 schedule = defaultdict(list)
 stationConverter = {'Forrest': 'forhl', 'Green': 'grnst', 'Stony': 'sbmnl', 'Jackson': 'jaksn', 'Roxbury': 'rcmnl',
                     'Ruggles': 'rugg', 'Mass': 'masta', 'Back': 'bbsta', 'Tufts': 'nemnl', 'Chinatown': 'chncl',
@@ -17,6 +20,7 @@ def main():
     try:
         while True:
             pop_dict(schedule, 'Roxbury')  # populate schedule dict
+            send_to_matrix()
             time.sleep(15)
     except SystemExit:
         print "Thread terminated"
@@ -37,6 +41,12 @@ def main():
     except:
         print "Caught Unhandled exception in mbtajsonparse main"
         print traceback.print_exc()
+
+def send_to_matrix():
+    time_1, color_1, time_2, color_2 = mbtaTimeDisplay.panel_train(schedule)
+    # print "Sending request with: " + time_1 + ", " + time_2 + ", " + color_1 +", " + color_2
+    r = requests.post(matrix_url, data= {'time_1':time_1, 'color_1':color_1, 'time_2':time_2, 'color_2':color_2})
+    # print str(r.status_code) + ": " + r.reason
 
 def get_station_json(station):
     response = urllib.urlopen(train_url + stationConverter[station] + '&format=json')

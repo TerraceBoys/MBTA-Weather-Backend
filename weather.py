@@ -3,15 +3,16 @@ import json
 import time
 import traceback
 import config
+import requests
 
 weather_url = 'http://api.wunderground.com/api/' + config.WEATHER_API_KEY + '/conditions/q/MA/Roxbury_Crossing.json'
-
+matrix_url = config.MATRIX_HOST + '/weather'
 
 def main():
     try:
         while True:
             grab_weather()
-            current_weather, color = weather_panel()
+            send_to_matrix()
             time.sleep(300)
     except SystemExit:
         print "Thread terminated"
@@ -33,6 +34,9 @@ def grab_weather():
     # print weather_data['current_observation']['weather']
     # print weather_data['current_observation']['feelslike_f'] + " F"
 
+def send_to_matrix():
+    temp, color = weather_panel()
+    requests.post(matrix_url, data={'temp': temp, 'r': color[0], 'g': color[1], 'b': color[2], 'jpeg':"sun2"})
 
 def weather_panel():
     global weather_data
