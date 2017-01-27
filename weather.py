@@ -2,9 +2,9 @@ import urllib
 import json
 import time
 import traceback
+import config
 
-weather_url = 'http://api.wunderground.com/api/' + access_key + '/conditions/q/MA/Roxbury_Crossing.json'
-spacer = "-------------------------------------------"
+weather_url = 'http://api.wunderground.com/api/' + config.WEATHER_API_KEY + '/conditions/q/MA/Roxbury_Crossing.json'
 
 
 def main():
@@ -12,8 +12,7 @@ def main():
         while True:
             grab_weather()
             current_weather, color = weather_panel()
-            for x in range(300):
-                time.sleep(1)
+            time.sleep(300)
     except SystemExit:
         print "Thread terminated"
     except IOError:

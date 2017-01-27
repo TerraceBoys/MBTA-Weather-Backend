@@ -66,3 +66,6 @@ def pop_dict(current_dict, station):
                                     train_data['mode'][x]['route'][r]['direction'][y]['direction_name']].append(
                                     int(train_data['mode'][x]['route'][r]['direction'][y]['trip'][z]['pre_away']))
                 break
+
+if __name__ == "__main__":
+    main()
