@@ -1,9 +1,9 @@
-import urllib
-import json
+#!.env/bin/python
 import time
 import traceback
 import config
 import requests
+import backoff
 
 weather_url = 'http://api.wunderground.com/api/' + config.WEATHER_API_KEY + '/conditions/q/MA/Roxbury_Crossing.json'
 matrix_url = config.MATRIX_HOST + '/weather'
@@ -11,13 +11,16 @@ matrix_url = config.MATRIX_HOST + '/weather'
 def main():
     try:
         while True:
-            grab_weather()
-            send_to_matrix()
+            weather_data = grab_weather()
+            send_to_matrix(weather_data)
             time.sleep(300)
-    except SystemExit:
-        print "Thread terminated"
     except IOError:
         print "Caught IOError while Loading Weather - Trying Again"
+        print traceback.print_exc()
+        time.sleep(600)
+        main()
+    except ValueError:
+        print "Caught ValueError while Loading Weather - Trying Again"
         print traceback.print_exc()
         time.sleep(600)
         main()
@@ -25,21 +28,24 @@ def main():
         print "Caught unhandled exception in Weather.main"
         print traceback.print_exc()
 
-
+@backoff.on_exception(backoff.expo,
+                      requests.exceptions.RequestException,
+                      max_tries=4)
 def grab_weather():
-    response = urllib.urlopen(weather_url)
-    global weather_data
-    weather_data = json.loads(response.read().decode())
+    r = requests.get(weather_url)
+    return r.json()
     # print "Boston Weather:"
     # print weather_data['current_observation']['weather']
     # print weather_data['current_observation']['feelslike_f'] + " F"
 
-def send_to_matrix():
-    temp, color = weather_panel()
+@backoff.on_exception(backoff.expo,
+                      requests.exceptions.RequestException,
+                      max_tries=4)
+def send_to_matrix(weather_data):
+    temp, color = weather_panel(weather_data)
     requests.post(matrix_url, data={'temp': temp, 'r': color[0], 'g': color[1], 'b': color[2], 'jpeg':"sun2"})
 
-def weather_panel():
-    global weather_data
+def weather_panel(weather_data):
     temperature = int(float(weather_data['current_observation']['feelslike_f']))
     return str(temperature), get_temp_color(temperature)
 

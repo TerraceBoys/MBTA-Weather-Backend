@@ -27,10 +27,10 @@ def pop_south(dict, station='Roxbury Crossing'):
 
 
 def panel_train(dict, station='Roxbury'):
-    time_1 = None
-    time_2 = None
-    color_1 = None
-    color_2 = None
+    time_1 = ""
+    time_2 = ""
+    color_1 = ""
+    color_2 = ""
     if 'Northbound' in dict:
         m1, s1 = secs_to_mins(dict['Northbound'][0])
         time_1, color_1 = time_handler(m1, s1, True)

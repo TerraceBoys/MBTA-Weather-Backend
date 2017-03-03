@@ -1,9 +1,9 @@
-import urllib
-import json
+#!.env/bin/python
 import time
 import traceback
 import config
 import requests
+import backoff
 import mbtaTimeDisplay
 from collections import defaultdict
 
@@ -20,10 +20,8 @@ def main():
     try:
         while True:
             pop_dict(schedule, 'Roxbury')  # populate schedule dict
-            send_to_matrix()
+            send_to_matrix(schedule)
             time.sleep(15)
-    except SystemExit:
-        print "Thread terminated"
     except IOError:
         print "Caught IOError"
         print traceback.print_exc()
@@ -42,16 +40,21 @@ def main():
         print "Caught Unhandled exception in mbtajsonparse main"
         print traceback.print_exc()
 
-def send_to_matrix():
+@backoff.on_exception(backoff.expo,
+                      requests.exceptions.RequestException,
+                      max_tries=4)
+def send_to_matrix(schedule):
     time_1, color_1, time_2, color_2 = mbtaTimeDisplay.panel_train(schedule)
-    # print "Sending request with: " + time_1 + ", " + time_2 + ", " + color_1 +", " + color_2
+    print time_1
+    print time_2
     r = requests.post(matrix_url, data= {'time_1':time_1, 'color_1':color_1, 'time_2':time_2, 'color_2':color_2})
-    # print str(r.status_code) + ": " + r.reason
 
+@backoff.on_exception(backoff.expo,
+                      requests.exceptions.RequestException,
+                      max_tries=4)
 def get_station_json(station):
-    response = urllib.urlopen(train_url + stationConverter[station] + '&format=json')
-    train_data = json.loads(response.read().decode())
-    return train_data
+    r = requests.get(train_url + stationConverter[station] + '&format=json')
+    return r.json()
 
 
 # Parse all Roxbury Crossing train arrival times
@@ -59,6 +62,7 @@ def get_station_json(station):
 def pop_dict(current_dict, station):
     train_data = get_station_json(station)
     current_dict.clear()
+
     if 'mode' in train_data:
         for x in range(len(train_data['mode'])):
             # If the mode is subway
