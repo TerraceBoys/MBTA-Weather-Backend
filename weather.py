@@ -13,7 +13,7 @@ def main():
         while True:
             weather_data = grab_weather()
             send_to_matrix(weather_data)
-            time.sleep(300)
+            time.sleep(600)
     except IOError:
         print "Caught IOError while Loading Weather - Trying Again"
         print traceback.print_exc()
