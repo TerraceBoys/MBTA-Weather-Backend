@@ -1,41 +1,19 @@
-# print all northbound train times
-def pop_north(dict, station='Roxbury Crossing'):
-    result = station + " - Northbound " + "\n"
-    for x in range(len(dict['Northbound'])):
-        if x == 0:
-            result += "Next Train: "
-            m, s = secs_to_mins(dict['Northbound'][x])
-            result += time_handler(m, s) + "\n"
-        else:
-            m, s = secs_to_mins(dict['Northbound'][x])
-            result += time_handler(m, s) + "\n"
-    return result
+import datetime
+import dateutil
 
-
-# Print all southbound train times
-def pop_south(dict, station='Roxbury Crossing'):
-    result = station + " - Southbound " + "\n"
-    for x in range(len(dict['Southbound'])):
-        if x == 0:
-            result += "Next Train: "
-            m, s = secs_to_mins(dict['Southbound'][x])
-            result += time_handler(m, s) + "\n"
-        else:
-            m, s = secs_to_mins(dict['Southbound'][x])
-            result += time_handler(m, s) + "\n"
-    return result
-
-
-def panel_train(dict, station='Roxbury'):
+def panel_train(times, station='Lechmere'):
     time_1 = ""
     time_2 = ""
     color_1 = ""
     color_2 = ""
-    if 'Northbound' in dict:
-        m1, s1 = secs_to_mins(dict['Northbound'][0])
+
+    times.sort()
+    times = filter(lambda x: x > 240, times)
+    if times:
+        m1, s1 = secs_to_mins(times[0])
         time_1, color_1 = time_handler(m1, s1, True)
-        if len(dict['Northbound']) > 1:
-            m2, s2 = secs_to_mins(dict['Northbound'][1])
+        if times.__len__() > 1:
+            m2, s2 = secs_to_mins(times[1])
             time_2, color_2 = time_handler(m2, s2, True)
             
     return time_1, color_1, time_2, color_2
@@ -49,9 +27,9 @@ def secs_to_mins(seconds):
 # Format the arrival times
 def time_handler(m, s, panel=False):
     if panel:
-        if m <= 1:
+        if m <= 5:
             return "%02d : %02d" % (m, s), "red"
-        elif m <= 3:
+        elif m <= 7:
             return "%02d : %02d" % (m, s), "orange"
         else:
             return "%02d : %02d" % (m, s), "green"
