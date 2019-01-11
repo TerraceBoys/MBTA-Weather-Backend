@@ -52,7 +52,6 @@ def get_station_json(station):
 
 def pop_list(current_list, station):
     train_data = get_station_json(station)
-    current_list.clear()
     global train_times
     train_times = []
     for train in train_data:
