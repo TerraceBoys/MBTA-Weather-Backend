@@ -19,7 +19,7 @@ stationConverter = {'Forrest': 'forhl', 'Green': 'grnst', 'Stony': 'sbmnl', 'Jac
 def main():
     try:
         while True:
-            pop_dict(schedule, 'Lechmere')  # populate schedule dict
+            pop_list(train_times, 'Lechmere')  # populate schedule dict
             send_to_matrix(train_times)
             time.sleep(15)
     except IOError:
@@ -50,9 +50,9 @@ def get_station_json(station):
     r = requests.get(train_url + stationConverter[station])
     return r.json()['data']
 
-def pop_dict(current_dict, station):
+def pop_list(current_list, station):
     train_data = get_station_json(station)
-    current_dict.clear()
+    current_list.clear()
     global train_times
     train_times = []
     for train in train_data:
