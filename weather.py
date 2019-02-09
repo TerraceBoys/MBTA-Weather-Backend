@@ -5,8 +5,9 @@ import config
 import requests
 import backoff
 
-weather_url = 'http://api.wunderground.com/api/' + config.WEATHER_API_KEY + '/conditions/q/MA/Roxbury_Crossing.json'
+weather_url = 'http://api.wunderground.com/api/' + config.WEATHER_API_KEY + '/conditions/q/MA/Cambridge.json'
 matrix_url = config.MATRIX_HOST + '/weather'
+allie_matrix_url = config.ALLIE_MATRIX_HOST + '/weather'
 
 def main():
     try:
@@ -44,6 +45,10 @@ def grab_weather():
 def send_to_matrix(weather_data):
     temp, color = weather_panel(weather_data)
     requests.post(matrix_url, data={'temp': temp, 'r': color[0], 'g': color[1], 'b': color[2], 'jpeg':"sun2"})
+    try:
+        requests.post(allie_matrix_url, data={'temp': temp, 'r': color[0], 'g': color[1], 'b': color[2], 'jpeg':"sun2"})
+    except:
+        print "Could not post to allie"
 
 def weather_panel(weather_data):
     temperature = int(float(weather_data['current_observation']['feelslike_f']))
