@@ -5,7 +5,7 @@ import config
 import requests
 import backoff
 
-weather_url = 'http://api.wunderground.com/api/' + config.WEATHER_API_KEY + '/conditions/q/MA/Cambridge.json'
+weather_url = 'https://api.darksky.net/forecast/' + config.WEATHER_API_KEY + '/42.368500,-71.082120'
 matrix_url = config.MATRIX_HOST + '/weather'
 allie_matrix_url = config.ALLIE_MATRIX_HOST + '/weather'
 
@@ -35,9 +35,6 @@ def main():
 def grab_weather():
     r = requests.get(weather_url)
     return r.json()
-    # print "Boston Weather:"
-    # print weather_data['current_observation']['weather']
-    # print weather_data['current_observation']['feelslike_f'] + " F"
 
 @backoff.on_exception(backoff.expo,
                       requests.exceptions.RequestException,
@@ -51,7 +48,7 @@ def send_to_matrix(weather_data):
         print "Could not post to allie"
 
 def weather_panel(weather_data):
-    temperature = int(float(weather_data['current_observation']['feelslike_f']))
+    temperature = int(float(weather_data['currently']['apparentTemperature']))
     return str(temperature), get_temp_color(temperature)
 
 
